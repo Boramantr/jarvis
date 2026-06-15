@@ -1,7 +1,7 @@
 """Vector Memory — Semantik geri çağırma (RAG).
 
 JARVIS'in "gerçekten hatırlama" katmanı. Her önemli olay/konuşma parçası
-Gemini text-embedding-004 ile 768-dim vektöre dönüştürülüp SQLite BLOB'una
+Gemini gemini-embedding-001 ile 768-dim vektöre dönüştürülüp SQLite BLOB'una
 yazılır. Geri çağırma sırasında sorgu embedding'i üretilir, kosinüs benzerliği
 ile top-k sonuç döner.
 
@@ -13,7 +13,7 @@ Dış API (geriye uyumlu hedeflenir):
 
 Tasarım kararları:
 - Tek SQLite DB (vectors.db), tek tablo `vectors(id, text, kind, ts, vec BLOB)`.
-- Gemini embeddings (`text-embedding-004`) — API key zaten var, lokal model
+- Gemini embeddings (`gemini-embedding-001`) — API key zaten var, lokal model
   yüklemiyoruz (RAM'e iyi).
 - Embedding tarafında 60sn LRU cache + 30 günlük "stale" temizlik (cleanup).
 - 10K kayda kadar numpy cosine yeterince hızlı; ileride sqlite-vec'e geçilebilir.
@@ -30,7 +30,7 @@ import numpy as np
 
 DB_PATH = Path.home() / ".jarvis" / "memory" / "vectors.db"
 _CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "api_keys.json"
-_MODEL = "text-embedding-004"
+_MODEL = "gemini-embedding-001"
 _DIM = 768
 _lock = threading.Lock()
 _conn: sqlite3.Connection | None = None

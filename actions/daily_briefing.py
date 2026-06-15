@@ -122,7 +122,7 @@ def _get_motivational_quote() -> str:
     try:
         import google.generativeai as genai
         genai.configure(api_key=_get_api_key())
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-3.1-flash")
         response = model.generate_content(
             "Give me ONE short motivational quote (max 20 words) in Turkish. "
             "Return ONLY the quote, no attribution, no quotation marks."

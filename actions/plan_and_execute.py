@@ -20,7 +20,7 @@ import json
 from pathlib import Path
 
 _CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "api_keys.json"
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.1-flash"
 _MAX_STEPS = 8
 _client = None
 

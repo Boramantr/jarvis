@@ -12,7 +12,7 @@ A desktop AI assistant that lives on your computer, speaks with you in real time
 through your microphone, opens and closes programs, manages your files, researches
 on the web, and keeps personalized memories just for you.
 
-`Windows` · `Python 3.12+` · `Gemini 2.5 Flash` · `PyQt6` · `SQLite` · `FastAPI`
+`Windows` · `Python 3.12+` · `Gemini 3.1 Flash` · `PyQt6` · `SQLite` · `FastAPI`
 
 </div>
 

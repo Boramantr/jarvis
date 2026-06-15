@@ -12,7 +12,7 @@ Bilgisayarına yerleşen, mikrofonla seninle gerçek zamanlı konuşan, programl
 açıp kapatan, dosyalarını yöneten, internetten araştırma yapan ve sana özel
 hatıralar tutan bir masaüstü AI asistanı.
 
-`Windows` · `Python 3.12+` · `Gemini 2.5 Flash` · `PyQt6` · `SQLite` · `FastAPI`
+`Windows` · `Python 3.12+` · `Gemini 3.1 Flash` · `PyQt6` · `SQLite` · `FastAPI`
 
 </div>
 

@@ -63,7 +63,7 @@ def translate_action(parameters: dict = None, player=None) -> str:
     try:
         import google.generativeai as genai
         genai.configure(api_key=_get_api_key())
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-3.1-flash")
 
         if action == "translate":
             source_hint = f" from {source}" if source else ""

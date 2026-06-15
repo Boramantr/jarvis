@@ -697,7 +697,7 @@ TOOL_DECLARATIONS = [
             "properties": {
                 "path": {"type": "STRING", "description": "Dosya yolu (mutlak veya göreceli)"},
                 "question": {"type": "STRING", "description": "Dosya hakkındaki soru/talimat. Boşsa özetlenir."},
-                "model": {"type": "STRING", "description": "Opsiyonel model adı (varsayılan gemini-2.5-flash)"}
+                "model": {"type": "STRING", "description": "Opsiyonel model adı (varsayılan gemini-3.1-flash)"}
             },
             "required": ["path"]
         }

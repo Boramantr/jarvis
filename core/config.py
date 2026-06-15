@@ -28,10 +28,10 @@ class JarvisConfig(BaseSettings):
 
     # --- Gemini / model ---
     gemini_api_key: str = ""
-    live_model: str = "models/gemini-2.5-flash-native-audio-preview-12-2025"
+    live_model: str = "models/gemini-3.1-flash-live"
     voice_name: str = "Charon"
-    embedding_model: str = "text-embedding-004"
-    reasoning_model: str = "gemini-2.5-flash"
+    embedding_model: str = "gemini-embedding-001"
+    reasoning_model: str = "gemini-3.1-flash"
 
     # --- Audio ---
     channels: int = 1

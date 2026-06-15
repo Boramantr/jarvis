@@ -16,7 +16,7 @@ from google import genai
 from google.genai import types as gtypes
 
 _CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "api_keys.json"
-_DEFAULT_MODEL = "gemini-2.5-flash"
+_DEFAULT_MODEL = "gemini-3.1-flash"
 _MAX_BYTES = 50_000_000  # 50 MB güvenlik tavanı
 
 _client: genai.Client | None = None

@@ -64,7 +64,7 @@ def _extract_text_with_gemini(image_path: str, request: str = "") -> str:
     import google.generativeai as genai
 
     genai.configure(api_key=_get_api_key())
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-3.1-flash")
 
     img = Image.open(image_path)
 
