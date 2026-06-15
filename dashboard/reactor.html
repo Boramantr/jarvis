@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JARVIS · Arc Reactor</title>
+<style>
+  html,body{margin:0;height:100%;background:radial-gradient(circle at center,rgba(8,14,28,0.55) 0%,rgba(3,6,12,0.85) 70%);overflow:hidden;font-family:'Consolas',ui-monospace,monospace;cursor:default;}
+  #arc{display:block;width:100vw;height:100vh;}
+  .tl{position:fixed;font-size:12px;letter-spacing:.06em;color:#4db8e8;opacity:0;transition:opacity .6s;}
+  .lbl{opacity:.45;}.val{color:#9fe4ff;font-size:16px;}
+  #c-out{top:18px;left:22px;} #c-temp{top:18px;right:22px;text-align:right;}
+  #c-mood{bottom:22px;left:22px;} #c-bond{bottom:22px;right:22px;text-align:right;}
+  #c-st{position:fixed;left:0;right:0;bottom:48px;text-align:center;font-size:13px;letter-spacing:.34em;color:#8fd8ff;text-transform:uppercase;opacity:0;transition:opacity .6s;}
+  #conn{position:fixed;top:18px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.1em;color:#3a6f88;text-transform:uppercase;}
+  .show{opacity:1!important;}
+</style>
+</head>
+<body>
+<canvas id="arc"></canvas>
+<div class="tl" id="c-out"><div class="lbl">OUTPUT</div><div class="val" id="v-out">42%</div></div>
+<div class="tl" id="c-temp"><div class="lbl">CORE TEMP</div><div class="val" id="v-temp">36.5°</div></div>
+<div class="tl" id="c-mood"><div class="lbl">MOOD</div><div class="val" id="v-mood">nominal</div></div>
+<div class="tl" id="c-bond"><div class="lbl">BOND</div><div class="val" id="v-bond">0 · 0h</div></div>
+<div id="c-st">online</div>
+<div id="conn">bağlanıyor…</div>
+<script>
+(function(){
+  const cv=document.getElementById('arc'),ctx=cv.getContext('2d');
+  let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2);
+  function rs(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);tickKey='';}
+  rs();addEventListener('resize',rs);
+
+  const MODE={
+    standby:{col:[80,150,190],bright:.45,spin:.25},
+    online:{col:[90,185,245],bright:.9,spin:.5},
+    listen:{col:[60,195,235],bright:1,spin:.7},
+    think:{col:[130,140,250],bright:.92,spin:1.25},
+    speak:{col:[255,182,92],bright:1,spin:.85}
+  };
+  let cur={col:[90,185,245],bright:.9,spin:.5,load:.42,audio:0},
+      tgt={col:[90,185,245],bright:.9,spin:.5},ring=0,
+      data={mode:'online',mood:'nominal',mood_rgb:null,audio:0,load:.42,core_temp:36.5,bond:0,uptime_h:0};
+  const L=(a,b,k)=>a+(b-a)*k;
+
+  function applyData(d){
+    data=d; const m=MODE[d.mode]||MODE.online;
+    tgt={col:(d.mood_rgb&&d.mood_rgb.length===3)?d.mood_rgb.slice():m.col, bright:m.bright, spin:m.spin};
+    document.getElementById('v-out').textContent=Math.round((d.load||0)*100)+'%';
+    document.getElementById('v-temp').textContent=(d.core_temp||0).toFixed(1)+'°';
+    document.getElementById('v-mood').textContent=d.mood||'—';
+    document.getElementById('v-bond').textContent=(d.bond||0)+' · '+(d.uptime_h||0)+'h';
+    document.getElementById('c-st').textContent={standby:'standby',online:'online',listen:'listening',think:'processing',speak:'speaking'}[d.mode]||d.mode;
+  }
+
+  let ws, wsAttempts=0;
+  const connEl=document.getElementById('conn');
+  function showConn(msg){connEl.textContent=msg;connEl.style.opacity=1;}
+  function wsHost(){
+    // WebView2 'file://' veya boş host ile açıldığında location.host yetersiz.
+    // Sabit 127.0.0.1:8765 kullan; aynı makinedeki JARVIS sunucusunu hedefler.
+    const h=location.host;
+    return (h && /^\d|localhost|127\./i.test(h)) ? h : '127.0.0.1:8765';
+  }
+  function connect(){
+    wsAttempts++;
+    const url='ws://'+wsHost()+'/ws/state';
+    try{ws=new WebSocket(url);}
+    catch(e){showConn('WS oluşturulamadı: '+e.message);setTimeout(connect,1500);return;}
+    ws.onopen=()=>{connEl.style.opacity=0;};
+    ws.onmessage=e=>{try{applyData(JSON.parse(e.data));connEl.style.opacity=0;}catch(_){}}
+    ws.onclose=ev=>{showConn('yeniden bağlanıyor… ('+wsAttempts+') kod:'+(ev&&ev.code||'?'));setTimeout(connect,1500);};
+    ws.onerror=()=>{showConn('ws hata · '+url);try{ws.close();}catch(_){}}
+  }
+  // İlk frame'de fallback poll: ws hâlâ kurulmadıysa /api/state'ten oku
+  function pollFallback(){
+    if(ws&&ws.readyState===1)return;
+    fetch('http://'+wsHost()+'/api/state',{cache:'no-store'})
+      .then(r=>r.json()).then(d=>{applyData(d);connEl.style.opacity=.4;connEl.textContent='polling fallback';})
+      .catch(_=>{});
+    setTimeout(pollFallback,1000);
+  }
+  connect();
+  setTimeout(pollFallback,2500);
+
+  let tickCache=document.createElement('canvas'),tctx=tickCache.getContext('2d'),tickKey='';
+  function tickRing(R,C,bright){
+    const key=Math.round(R)+'|'+C.join(',')+'|'+Math.round(bright*8);
+    if(key===tickKey)return tickCache;
+    const sz=Math.ceil(R*2.9*DPR);tickCache.width=sz;tickCache.height=sz;
+    tctx.setTransform(DPR,0,0,DPR,0,0);tctx.clearRect(0,0,sz,sz);
+    const o=sz/(2*DPR),rgb=C.join(',');tctx.save();tctx.translate(o,o);
+    for(let i=0;i<120;i++){const a=i/120*6.28,lng=i%6===0,r0=R*1.32,r1=R*(lng?1.42:1.37);
+      tctx.beginPath();tctx.moveTo(Math.cos(a)*r0,Math.sin(a)*r0);tctx.lineTo(Math.cos(a)*r1,Math.sin(a)*r1);
+      tctx.strokeStyle=`rgba(${rgb},${(lng?.4:.16)*bright})`;tctx.lineWidth=lng?1.4:.6;tctx.stroke();}
+    tctx.restore();tickKey=key;return tickCache;
+  }
+
+  const bootStart=performance.now();let telemShown=false;
+  const ease=x=>1-Math.pow(1-x,3);
+
+  function render(now){
+    const el=now-bootStart, boot=ease(Math.min(1,el/2400));
+    const coreRev=Math.min(1,el/600), ringRev=Math.max(0,Math.min(1,(el-350)/1000));
+    if(!telemShown&&el>1200){telemShown=true;document.querySelectorAll('.tl,#c-st').forEach(e=>e.classList.add('show'));}
+
+    const k=.06;
+    for(let i=0;i<3;i++)cur.col[i]=L(cur.col[i],tgt.col[i],k);
+    cur.bright=L(cur.bright,tgt.bright,k);cur.spin=L(cur.spin,tgt.spin,k);
+    cur.load=L(cur.load,data.load||0,k);cur.audio=L(cur.audio,data.audio||0,.12);
+    ring+=cur.spin*0.01*(1+(1-boot)*3.5);
+    const t=now/1000,C=cur.col.map(v=>Math.round(Math.max(0,Math.min(255,v)))),rgb=C.join(','),
+      bC=`${Math.min(C[0]+70,255)},${Math.min(C[1]+55,255)},${Math.min(C[2]+45,255)}`;
+    const cx=W/2,cy=H/2,breath=Math.sin(t*1.4)*.5+.5,
+      live=cur.audio*(.5+.5*Math.abs(Math.sin(t*7)+.5*Math.sin(t*13))),
+      R=Math.min(W,H)*0.30*(0.6+0.4*boot), gbri=cur.bright*boot;
+
+    ctx.clearRect(0,0,W,H);
+    let vg=ctx.createRadialGradient(cx,cy,30,cx,cy,Math.max(W,H)*.55);
+    vg.addColorStop(0,`rgba(${rgb},${.06*gbri})`);vg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+
+    const tk=tickRing(R,C,gbri*ringRev);ctx.drawImage(tk,cx-tk.width/(2*DPR),cy-tk.height/(2*DPR),tk.width/DPR,tk.height/DPR);
+
+    ctx.save();ctx.translate(cx,cy);ctx.globalAlpha=ringRev;
+    const sweep=t*.6%6.28;
+    ctx.beginPath();ctx.arc(0,0,R*1.34,sweep,sweep+.5);ctx.strokeStyle=`rgba(${bC},${.6*gbri})`;ctx.lineWidth=2.5;ctx.stroke();
+    const ga0=-Math.PI*0.72,ga1=Math.PI*0.72;
+    ctx.beginPath();ctx.arc(0,0,R*1.22,ga0,ga1);ctx.strokeStyle=`rgba(${rgb},${.18*gbri})`;ctx.lineWidth=4;ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0,R*1.22,ga0,ga0+(ga1-ga0)*cur.load);ctx.strokeStyle=`rgba(${bC},${.9*gbri})`;ctx.lineWidth=4;ctx.stroke();
+
+    ctx.rotate(ring*.4);
+    for(let i=0;i<24;i++){const a=i/24*6.28;ctx.beginPath();ctx.arc(0,0,R*1.04,a+.04,a+.22);
+      ctx.strokeStyle=`rgba(${rgb},${(i%2?.5:.28)*gbri})`;ctx.lineWidth=6;ctx.stroke();}
+    ctx.rotate(-ring*.4);
+
+    ctx.rotate(-ring*.7);
+    for(let i=0;i<9;i++){const a=i/9*6.28-Math.PI/2,cR=R*.78,x=Math.cos(a)*cR,y=Math.sin(a)*cR;
+      ctx.save();ctx.translate(x,y);ctx.rotate(a+Math.PI/2);
+      const cw=R*.2,ch=R*.34;
+      ctx.fillStyle=`rgba(${Math.round(C[0]*.4)},${Math.round(C[1]*.4)},${Math.round(C[2]*.45)},${.6*gbri})`;
+      ctx.strokeStyle=`rgba(${rgb},${.55*gbri})`;ctx.lineWidth=1;
+      ctx.beginPath();ctx.rect(-cw/2,-ch/2,cw,ch);ctx.fill();ctx.stroke();
+      for(let w=0;w<4;w++){const wy=-ch/2+ch*(w+.5)/4;ctx.beginPath();ctx.moveTo(-cw/2,wy);ctx.lineTo(cw/2,wy);
+        ctx.strokeStyle=`rgba(${bC},${(.28+.5*(.5+.5*Math.sin(t*4-i)))*gbri})`;ctx.lineWidth=1.6;ctx.stroke();}
+      ctx.restore();}
+    ctx.rotate(ring*.7);
+
+    ctx.rotate(ring*.5);
+    ctx.beginPath();for(let i=0;i<3;i++){const a=i/3*6.28-Math.PI/2,r=R*.5,x=Math.cos(a)*r,y=Math.sin(a)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+    ctx.closePath();ctx.strokeStyle=`rgba(${bC},${.7*gbri})`;ctx.lineWidth=2;ctx.stroke();
+    for(let i=0;i<3;i++){const a=i/3*6.28-Math.PI/2,r=R*.5;ctx.beginPath();ctx.arc(Math.cos(a)*r,Math.sin(a)*r,R*.05,0,6.28);
+      ctx.fillStyle=`rgba(${bC},${.85*gbri})`;ctx.fill();}
+    ctx.rotate(-ring*.5);
+    ctx.globalAlpha=1;
+
+    const coreR=R*.3*(1+breath*.06+live*.18)*coreRev;
+    let cg=ctx.createRadialGradient(0,0,2,0,0,coreR*2.6);
+    cg.addColorStop(0,`rgba(245,252,255,${.95*cur.bright*coreRev})`);cg.addColorStop(.3,`rgba(${bC},${.7*cur.bright*coreRev})`);
+    cg.addColorStop(.7,`rgba(${rgb},${.25*cur.bright*coreRev})`);cg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(0,0,coreR*2.6,0,6.28);ctx.fill();
+    ctx.beginPath();ctx.arc(0,0,coreR*.55,0,6.28);ctx.fillStyle=`rgba(250,253,255,${cur.bright*coreRev})`;ctx.fill();
+    ctx.restore();
+
+    if(boot>.99){ctx.strokeStyle=`rgba(${rgb},${.5*gbri})`;ctx.lineWidth=1.4;const m=30,bl=22;
+      [[m,m,1,1],[W-m,m,-1,1],[m,H-m,1,-1],[W-m,H-m,-1,-1]].forEach(p=>{
+        ctx.beginPath();ctx.moveTo(p[0],p[1]+bl*p[3]);ctx.lineTo(p[0],p[1]);ctx.lineTo(p[0]+bl*p[2],p[1]);ctx.stroke();});}
+  }
+
+  let last=0;
+  function loop(now){
+    requestAnimationFrame(loop);
+    if(document.hidden)return;                       // görünmezken sıfır iş
+    const idle=(data.mode==='standby'||data.mode==='online')&&(data.audio||0)<0.06&&(now-bootStart)>2600;
+    const fps=idle?14:30;                             // boştayken yavaşla
+    if(now-last<1000/fps)return;
+    last=now;
+    render(now);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

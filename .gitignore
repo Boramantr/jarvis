@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+installer_out/
+
+# Hassas
+.env
+config/api_keys.json
+*.key
+
+# Kullanıcı verisi
+.jarvis/
+*.db
+*.db-wal
+*.db-shm
+
+# Profil/log
+*.svg
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

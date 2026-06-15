@@ -1,0 +1,35 @@
+sounddevice
+google-genai
+google-generativeai
+pillow
+requests
+beautifulsoup4
+duckduckgo-search
+playwright          
+pyautogui
+pyperclip
+pygetwindow       
+opencv-python
+numpy
+mss
+Pillow
+psutil
+comtypes
+pycaw               
+win10toast          
+send2trash
+youtube-transcript-api
+pywinauto
+python-pptx
+pyttsx3
+gTTS
+keyboard
+spotipy
+python-docx
+audioop-lts
+qasync
+cryptography
+fastapi
+uvicorn[standard]
+# Geliştirme/profil: pip install py-spy
+# Çalıştırma: py-spy record -o profile.svg --pid <jarvis_pid>

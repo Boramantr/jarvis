@@ -1,0 +1,59 @@
+[project]
+name = "jarvis-assistant"
+version = "0.4.0"
+description = "JARVIS — sesli, araç-kullanan kişisel AI asistan (Gemini Live + PyQt6)"
+requires-python = ">=3.12"
+readme = "readme.md"
+dependencies = [
+    "sounddevice",
+    "google-genai",
+    "pillow",
+    "requests",
+    "beautifulsoup4",
+    "duckduckgo-search",
+    "playwright",
+    "pyautogui",
+    "pyperclip",
+    "pygetwindow",
+    "numpy",
+    "mss",
+    "psutil",
+    "comtypes",
+    "pycaw",
+    "send2trash",
+    "youtube-transcript-api",
+    "pyttsx3",
+    "gTTS",
+    "keyboard",
+    "spotipy",
+    "python-docx",
+    "audioop-lts",
+    "qasync",
+    "PyQt6",
+    "cryptography",
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic-settings",
+]
+
+[project.optional-dependencies]
+dev = ["ruff", "pytest", "pytest-asyncio", "py-spy"]
+telemetry = ["sentry-sdk"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = ["__pycache__", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = [
+    "E501",   # uzun satır — line-length zaten 120, dökümantasyon stringleri esnek
+    "E722",   # bare except — mevcut kodda bilinçli kullanılıyor (arka plan görevleri)
+    "B008",   # fonksiyon çağrısı default — FastAPI pattern
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-q --tb=short"
