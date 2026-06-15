@@ -1,7 +1,7 @@
 ; JARVIS Installer — Inno Setup script
 #define MyAppName "JARVIS"
 #define MyAppVersion "1.0.0"
-#define MyAppPublisher "Bora Öçer"
+#define MyAppPublisher "Bora Ocaker"
 #define MyAppURL "https://boraocaker.com"
 #define MyAppExeName "JARVIS.exe"
 
