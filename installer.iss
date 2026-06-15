@@ -1,7 +1,8 @@
 ; JARVIS Installer — Inno Setup script
 #define MyAppName "JARVIS"
 #define MyAppVersion "1.0.0"
-#define MyAppPublisher "Bora Mantar"
+#define MyAppPublisher "Bora Öçer"
+#define MyAppURL "https://boraocaker.com"
 #define MyAppExeName "JARVIS.exe"
 
 [Setup]
@@ -9,6 +10,8 @@ AppId={{8B4F9C6A-2E7D-4B1A-9F0E-1C5D3E8A7B4F}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes

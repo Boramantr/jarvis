@@ -209,7 +209,7 @@ There's no speaker recognition yet — anyone nearby can talk to it.
 
 ## 📜 Origin & License
 
-**Built by:** [Bora Mantar](https://github.com/Boramantr) — © 2026
+**Built by:** [Bora Öçer](https://boraocaker.com) · [GitHub](https://github.com/Boramantr) — © 2026
 
 Designed and developed from the ground up; the architecture, audio pipeline,
 tool system, encrypted multi-layer memory, safety controls, web dashboard, and

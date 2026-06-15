@@ -209,7 +209,7 @@ Hayır, Gemini'ye bağlanmak gerekiyor. Tamamen offline bir alternatif planlanı
 
 ## 📜 Köken & Lisans
 
-**Geliştiren:** [Bora Mantar](https://github.com/Boramantr) — © 2026
+**Geliştiren:** [Bora Öçer](https://boraocaker.com) · [GitHub](https://github.com/Boramantr) — © 2026
 
 Tamamen sıfırdan tasarlanıp geliştirilmiş; mimari, ses pipeline'ı, araç sistemi,
 şifreli çok katmanlı hafıza, güvenlik kontrolleri, web paneli ve gözlemlenebilirlik
